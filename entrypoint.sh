@@ -8,4 +8,4 @@ jq -n \
     '{store: $env, discharge: $discharge, root: $root}' > webteam-credentials.surl
 
 # Run the Python script
-surl_month_in_snaps.py -e $WEBTEAM_ACCOUNT_EMAIL -s production -p package_upload -a webteam-credentials
+surl_month_in_snaps.py -e $WEBTEAM_ACCOUNT_EMAIL -s production -p package_upload -a webteam-credentials --marketo-root $MARKETO_REST_DOMAIN --marketo-client-id $MARKETO_CLIENT_ID
