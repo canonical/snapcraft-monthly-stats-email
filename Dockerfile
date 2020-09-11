@@ -8,5 +8,6 @@ RUN pip3 install tenacity
 RUN pip3 install git+https://github.com/Roadmaster/surl.git
 
 ADD entrypoint.sh .
+ADD main.py .
 
 ENTRYPOINT ./entrypoint.sh
