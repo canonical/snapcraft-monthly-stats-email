@@ -3,11 +3,9 @@ FROM ubuntu:focal
 # Install required system packages for our CronJob
 RUN apt-get update && apt-get install --yes --no-install-recommends python3-pip git jq
 
-# Install surl python package
-RUN pip3 install tenacity
-RUN pip3 install git+https://github.com/Roadmaster/surl.git
+ADD entrypoint.sh main.py requirements.txt ./
 
-ADD entrypoint.sh .
-ADD main.py .
+# Install python packages
+RUN pip3 install --no-cache-dir -r requirements.txt
 
 ENTRYPOINT ./entrypoint.sh

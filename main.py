@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 
 import argparse
+import copy
 import datetime
+import functools
+import json
 import logging
 import os
-import requests
-import urllib
 import sys
+import urllib
+
+import requests
 import surl
-import json
-import functools
-import copy
-from tenacity import retry, stop_after_attempt, retry_if_exception_type
+from sentry_sdk import init
+from tenacity import retry, retry_if_exception_type, stop_after_attempt
 
 # Schema:
 # channelMapWithMetrics = {
@@ -36,6 +38,8 @@ from tenacity import retry, stop_after_attempt, retry_if_exception_type
 # snapStoreAccountID = 'developer_id'
 # unused = 'snap_id'
 
+# Set up Sentry
+init(os.getenv("SENTRY_DSN"))
 
 logging.basicConfig(format="\033[3;1m%(message)s\033[0m")
 logger = logging.getLogger()
@@ -105,6 +109,14 @@ def _get_channel_parts(channel):
     return (track, risk, branch)
 
 
+@retry(
+    reraise=True,
+    stop=stop_after_attempt(3),
+    retry=(
+        retry_if_exception_type(requests.exceptions.HTTPError)
+        | retry_if_exception_type(requests.exceptions.ConnectionError)
+    ),
+)
 def get_channel_metrics(snap_id, config):
     """
     channelMapWithMetrics = {
@@ -199,8 +211,8 @@ def add_weekly_active_totals(snaps):
 
 def add_missing_channels(snaps):
     """The metrics API will not return channels without subscribers.
-       As not showing some channels may confuse readers, fill in the missing
-       channels.
+    As not showing some channels may confuse readers, fill in the missing
+    channels.
     """
 
     for snap in snaps:
@@ -231,16 +243,16 @@ def add_missing_channels(snaps):
 def _channel_cmp(a, b):
     """Key function to sort channel names.
 
-       Sorts as:
-       latest/stable
-       latest/stable/hotfix
-       latest/candidate
-       latest/beta
-       latest/edge
-       ingest/stable
-       10/stable
-       10/candidate
-       9/stable
+    Sorts as:
+    latest/stable
+    latest/stable/hotfix
+    latest/candidate
+    latest/beta
+    latest/edge
+    ingest/stable
+    10/stable
+    10/candidate
+    9/stable
     """
     channels = {"stable": 4, "candidate": 3, "beta": 2, "edge": 1}
     if a == b:
@@ -473,8 +485,8 @@ def update_marketo_objects(snaps, config):
 
 def mangle_for_marketo(snaps, minimum=10):
     """Filter out snaps that are not released to any channel or have fewer
-       installs than the specified minimum (setting their metrics to empty).
-       Reformat data for Marketo as key/string pairs."""
+    installs than the specified minimum (setting their metrics to empty).
+    Reformat data for Marketo as key/string pairs."""
 
     mangled = copy.deepcopy(snaps)
     for snap in mangled:
