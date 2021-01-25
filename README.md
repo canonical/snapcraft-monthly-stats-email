@@ -21,3 +21,21 @@ Extract the macaroon and discharge from the generated file and update the secret
 ```bash
 kubectl edit secret snapcraft-monthly-stats-email --namespace production
 ```
+
+## Run the project
+
+1. You will need to create a `.env.local` file in the root of the project with the following secrets:
+
+    ```
+    WEBTEAM_ACCOUNT_EMAIL
+    WEBTEAM_ROOT_MACAROON
+    WEBTEAM_DISCHARGE_MACAROON
+    MARKETO_REST_DOMAIN
+    MARKETO_CLIENT_ID
+    MARKETO_SECRET
+    SENTRY_DSN (Optional)
+    ```
+
+2. Build the Docker image: `docker build . --tag snapcraft-monthly-stats`
+
+3. Run the Docker image: `docker run -ti --env-file .env.local snapcraft-monthly-stats`
