@@ -318,6 +318,7 @@ def add_toplevel_metadata(source, target):
             "snapStoreAccountID": snap["developer_id"],
             "snapID": snap["snap_id"],
         }
+
         for media in snap["media"]:
             if media["type"] == "icon":
                 obj["snapIconURL"] = media["url"]
@@ -475,7 +476,11 @@ def post_to_marketo(snap, token, config):
 
 def update_marketo_objects(snaps, config):
     token = _get_marketo_access_token(config)
+
     for snap in snaps:
+        if snap["snapName"] == "null":
+            continue
+
         try:
             post_to_marketo(snap, token, config)
         except MarketoTokenExpired:
@@ -516,6 +521,7 @@ def main():
     parser.add_argument("--snap-id", required=False)
     parser.add_argument("--developer-id", required=False)
     additional_config = parser.parse_args(remainder)
+
     if additional_config.marketo_root:
         try:
             additional_config.marketo_secret = os.environ["MARKETO_SECRET"]
@@ -525,7 +531,9 @@ def main():
 
     config = _refresh_discharge(config)
     snaps = []
+
     logging.info("getting snaps")
+
     if (
         additional_config.snap_id
         and additional_config.snap_name
@@ -542,14 +550,18 @@ def main():
         ]
     else:
         source_snaps = get_snaps(config)
+
     add_toplevel_metadata(source_snaps, snaps)
+
     logging.info("getting metrics")
     add_channel_map_metrics(snaps, config)
     add_weekly_active_totals(snaps)
     add_missing_channels(snaps)
     sort_channels(snaps)
+
     logging.info("getting versions")
     add_channel_map_versions(snaps, config)
+
     if additional_config.marketo_secret:
         logging.info("updating marketo")
         update_marketo_objects(mangle_for_marketo(snaps), additional_config)
