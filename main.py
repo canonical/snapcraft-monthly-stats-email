@@ -348,9 +348,15 @@ def add_channel_map_metrics(snaps, config):
 def sort_channels(snaps):
     for snap in snaps:
         channel_metrics = snap["channelMapWithMetrics"]
-        sorted_channels = sort_metrics_by_channel(
-            channel_metrics["channelMap"]
-        )
+
+        try:
+            sorted_channels = sort_metrics_by_channel(
+                channel_metrics["channelMap"]
+            )
+        except Exception:
+            logging.info("Error sorting channels for snap {snap['snapName']}")
+            continue
+
         channel_metrics["channelMap"] = sorted_channels
 
 
