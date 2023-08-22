@@ -14,6 +14,27 @@ To generate a fresh macaroon use:
 snapcraft export-login --acls package_upload --expires="2022-01-01T00:00:00" webteam-session.txt
 ```
 
+### Snapcraft 7+
+In snapcraft 7+ the output is a [base64 encoded string](https://snapcraft.io/docs/snapcraft-authentication) that you can extract the parts:
+
+```bash
+cat webteam-session.txt | base64 -d
+```
+
+This will return a JSON blob. You need the `r` key for the root and `d` key for the discharge. They then both need base64 encoding.
+
+#### Root
+
+```bash
+cat webteam-session.txt | base64 -d | jq -r .v.r | base64 -w 0
+```
+
+#### Discharge
+
+```bash
+cat webteam-session.txt | base64 -d | jq -r .v.d | base64 -w 0
+```
+
 **The maximum amount of time for a valid session is one year**
 
 Extract the macaroon and discharge from the generated file and update the secrets on Kubernetes.
