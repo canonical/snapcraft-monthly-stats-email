@@ -1,4 +1,4 @@
-FROM ubuntu:focal
+FROM ubuntu:jammy
 
 # Install required system packages for our CronJob
 RUN apt-get update && apt-get install --yes --no-install-recommends python3-pip git jq
